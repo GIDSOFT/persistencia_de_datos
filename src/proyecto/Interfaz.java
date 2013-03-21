@@ -6,18 +6,28 @@ package proyecto;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.security.CodeSource;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.Properties;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -64,7 +74,7 @@ public final class Interfaz extends javax.swing.JFrame {
     String separador = System.getProperty("file.separator");
     /*Variable de tipo File donde le damos la ruta donde se encuentra nuestro 
      archivo tanto para ser leido como modificado*/
-    File file = new File(System.getProperty("user.dir").concat(separador).concat("registro.txt"));
+    File file = obtenerArchivo("registro.txt");
     Calendar annoSistema = new GregorianCalendar();
     /*esta variable es el año del sistema */
     public int anno = annoSistema.get(Calendar.YEAR);
@@ -73,12 +83,16 @@ public final class Interfaz extends javax.swing.JFrame {
     JRCsvDataSource dataSource;
     Hilo hilo;
     SimpleDateFormat sdf;
-    Icon imgGuardar=new ImageIcon(System.getProperty("user.dir").concat(separador).concat("Guardar.png"));
-    Icon imgReporte=new ImageIcon(System.getProperty("user.dir").concat(separador).concat("Reporte.png"));
+    Icon imgGuardar = new ImageIcon(System.getProperty("user.dir").concat(separador).concat("Guardar.png"));
+    Icon imgReporte = new ImageIcon(System.getProperty("user.dir").concat(separador).concat("Reporte.png"));
+    //Idioma en el que va a Correr la Aplicacion
+    ResourceBundle langGlobal;
+
     /**
      * Creates new form Interfaz
      */
     public Interfaz() {
+
 
         initComponents();
         llenarCbIdentificacion();
@@ -86,10 +100,20 @@ public final class Interfaz extends javax.swing.JFrame {
         llenarCbEPS();
         cargarTabla();
         idioma = configLenguage();
-        obtenerLenguage();
+        langGlobal = obtenerArchivoPropiedades(idioma);
+
+        System.out.println("langGlobal = " + langGlobal);
+        //obtenerLenguage();
         hilo = new Hilo();
         btnGuardar.setIcon(imgGuardar);
         btnInforme.setIcon(imgReporte);
+
+        //Ruta desde dondo corre la app
+        String rutaApp = System.getProperty("user.dir");
+        System.out.println("rutaApp = " + rutaApp);
+
+        applyLenguage();
+
     }
 
     /**
@@ -276,12 +300,8 @@ public final class Interfaz extends javax.swing.JFrame {
 
     @SuppressWarnings("empty-statement")
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-        if (!cbIdentificacion.getSelectedItem().equals("-- SELECCIONE --")
-                && (!txtNombre.getText().isEmpty()) && (!txtIdentificacion.getText().isEmpty())
-                && (!txtApellidos.getText().isEmpty()) && (!cbCiudadR.getSelectedItem().equals("-- SELECCIONE --"))
-                && (!cbEPS.getSelectedItem().equals("-- SELECCIONE --"))
-                && (jDateFecha.getDate() != null)) {
-            
+        if (true) {
+
             annoNaci = jDateFecha.getCalendar().get(Calendar.YEAR);
             /*esta variable nos muestra la edad*/
             edad = (anno - annoNaci);
@@ -307,8 +327,8 @@ public final class Interfaz extends javax.swing.JFrame {
                 modeloTabla.addRow(nuevo);
 
                 /*metodo para guardar el archivo */
-                guardarArchivo();
-                
+                guardarArchivo2();
+
                 cbIdentificacion.setSelectedItem("-- SELECCIONE --");
                 cbCiudadR.setSelectedItem("-- SELECCIONE --");
                 cbEPS.setSelectedItem("-- SELECCIONE --");
@@ -319,7 +339,7 @@ public final class Interfaz extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Señor Usuario su Tipo de Documento no Esta Correcto",
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
-            
+
         } else {
             JOptionPane.showMessageDialog(this, "Señor Usuario Todos Los Campos Deben de Estar Llenos",
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -564,6 +584,53 @@ public final class Interfaz extends javax.swing.JFrame {
             }
         }
     }
+    
+    private void guardarArchivo2() {
+        /*esta es la fecha del jDateChooser*/
+        Date date = jDateFecha.getDate();
+        /*token: subString*/
+        /*divide una cadena en tokens. atendiendo a un delimitador en concreto*/
+        /*hasMoreTokens: Mira si hay mas tokens en el array de token que tiene 
+         StringTokenizer*/
+        /*nextToken: devuelve el siguiente token*/
+        try {
+            fichero = new FileWriter(file, true);
+            pw = new PrintWriter(fichero);
+            //se guarda linea por linea en el archivo
+           // while (st.hasMoreTokens()) {
+                
+                pw.print(cbIdentificacion.getSelectedItem());
+                pw.print(";");
+                pw.print(txtIdentificacion.getText());
+                pw.print(";");
+                pw.print(txtNombre.getText());
+                pw.print(";");
+                pw.print(txtApellidos.getText());
+                pw.print(";");
+                pw.print(sdf.format(date));
+                pw.print(";");
+                pw.print(edad);
+                pw.print(";");
+                pw.print(sexo);
+                pw.print(";");
+                pw.print(cbCiudadR.getSelectedItem());
+                pw.print(";");
+                pw.print(cbEPS.getSelectedItem());
+                pw.print(";");
+                pw.println("\n");
+            //}
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (null != fichero) {
+                    fichero.close();
+                }
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        }
+    }
 
     /**
      * Este metodo lo que hace es leer el archivo y comparar si el numero de
@@ -581,7 +648,7 @@ public final class Interfaz extends javax.swing.JFrame {
     public void compararDocumento() {
         Scanner scan;
         try {
-            scan = new Scanner(new File(System.getProperty("user.dir").concat(separador).concat("registro.txt")));
+            scan = new Scanner(obtenerArchivo("registro.txt"));
             while (scan.hasNext()) {
                 fila = scan.nextLine();
                 posiciones = fila.split(";");
@@ -608,7 +675,7 @@ public final class Interfaz extends javax.swing.JFrame {
     public void cargarTabla() {
         try {
             modeloTabla = (DefaultTableModel) jTRegistro.getModel();
-            Scanner scan = new Scanner(new File(System.getProperty("user.dir").concat(separador).concat("registro.txt")));
+            Scanner scan = new Scanner(obtenerArchivo("registro.txt"));
             while (scan.hasNext()) {
                 fila = scan.nextLine();//devuelve la siguiente linea del fichero
                 posiciones = fila.split(";");
@@ -675,7 +742,11 @@ public final class Interfaz extends javax.swing.JFrame {
     private String configLenguage() {
         ResourceBundle config;
         String propiedades = "Espannol_es_CO";
-        config = ResourceBundle.getBundle("Configuracion");
+        config = obtenerArchivoPropiedades("Configuracion.properties"); //ResourceBundle.getBundle("Configuracion");
+
+        System.out.println("config = " + config);
+
+        System.out.println("Idioma de la App |" + config.getString("lenguaje"));
         if ("es".equals(config.getString("lenguaje"))) {
             propiedades = "Espannol_es_CO";
             sdf = new SimpleDateFormat(config.getString("formatoFecha"));
@@ -683,34 +754,40 @@ public final class Interfaz extends javax.swing.JFrame {
             propiedades = "Ingles_en_US";
             sdf = new SimpleDateFormat(config.getString("formatoFechaI"));
         }
-        return propiedades;
+        return propiedades.concat(".properties");
+        
+        //Ingles_en_US.properties
+        //Espannol_es_CO.properties
     }
 
     /*ResourceBundle.getBundle(idioma): aca solamente estamos determinando
      el idioma*/
     /*getString("btnGuardar")): buscara la etiqueta con el nombre "btnGuardar"
      y devolvera el valor*/
-    private void obtenerLenguage() {
+    private void applyLenguage() {
         try {
-            btnGuardar.setText(ResourceBundle.getBundle(idioma).getString("btnGuardar"));
-            btnInforme.setText(ResourceBundle.getBundle(idioma).getString("btnInforme"));
-            lbTipoIdentificacion.setText(ResourceBundle.getBundle(idioma).getString("lbTipoIdentificacion"));
-            lbIdentificacion.setText(ResourceBundle.getBundle(idioma).getString("lbIdentificacion"));
-            lbNombre.setText(ResourceBundle.getBundle(idioma).getString("lbNombre"));
-            lbApellido.setText(ResourceBundle.getBundle(idioma).getString("lbApellido"));
-            lbFechaNacimiento.setText(ResourceBundle.getBundle(idioma).getString("lbFechaNacimiento"));
-            lbSexo.setText(ResourceBundle.getBundle(idioma).getString("lbSexo"));
-            lbCiudadResidencia.setText(ResourceBundle.getBundle(idioma).getString("lbCiudadResidencia"));
-            lbBuscar.setText(ResourceBundle.getBundle(idioma).getString("lbBuscar"));
-            rbFemenino.setText(ResourceBundle.getBundle(idioma).getString("rbFemenino"));
-            rbMasculino.setText(ResourceBundle.getBundle(idioma).getString("rbMasculino"));
+
+            System.out.println("btnGuardar " + langGlobal.getString("btnGuardar"));
+
+            btnGuardar.setText(langGlobal.getString("btnGuardar"));
+            btnInforme.setText(langGlobal.getString("btnInforme"));
+            lbTipoIdentificacion.setText(langGlobal.getString("lbTipoIdentificacion"));
+            lbIdentificacion.setText(langGlobal.getString("lbIdentificacion"));
+            lbNombre.setText(langGlobal.getString("lbNombre"));
+            lbApellido.setText(langGlobal.getString("lbApellido"));
+            lbFechaNacimiento.setText(langGlobal.getString("lbFechaNacimiento"));
+            lbSexo.setText(langGlobal.getString("lbSexo"));
+            lbCiudadResidencia.setText(langGlobal.getString("lbCiudadResidencia"));
+            lbBuscar.setText(langGlobal.getString("lbBuscar"));
+            rbFemenino.setText(langGlobal.getString("rbFemenino"));
+            rbMasculino.setText(langGlobal.getString("rbMasculino"));
         } catch (ExceptionInInitializerError e) {
             System.out.println("error no se pudo encontrar el archivo " + e);
         } catch (Exception e) {
             System.out.println("error general " + e);
         }
     }
-    
+
     public void leer() {
         File f = new File(System.getProperty("user.dir").concat(separador).concat("registro.txt"));
         BufferedReader entrada;
@@ -724,5 +801,64 @@ public final class Interfaz extends javax.swing.JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * @see http://christmo99.wordpress.com/2011/04/29/leer-archivo-properties-desde-el-path-donde-se-ejecuta-el-jar/
+     * @param arc
+     * @return 
+     */
+    public static ResourceBundle obtenerArchivoPropiedades(String arc) {
+        ResourceBundle prope = null;
+        InputStreamReader origenProperties = null;
+        try {
+            CodeSource codeSource = Interfaz.class.getProtectionDomain().getCodeSource();
+            File jarFile = new File(codeSource.getLocation().toURI().getPath());
+            File jarDir = jarFile.getParentFile();
+
+            System.out.println("jarFile = " + jarFile.getAbsolutePath());
+            System.out.println("jarDir = " + jarDir.getParentFile());
+
+            FileInputStream fis = null;
+
+            if (jarDir != null && jarDir.isDirectory()) {
+                File propFile = new File(jarDir, arc);
+                fis = new FileInputStream(propFile);
+                origenProperties = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                prope = new PropertyResourceBundle(origenProperties);
+                //prop.load(new BufferedReader(new FileReader(propFile.getAbsoluteFile())));
+            }
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException ex) {
+            //System.err.println("No se encuentra el archivo: " + ex.getMessage());
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, String.format("No se encontró el archivo de propiedades (%s)", arc), ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return prope;
+    }
+
+    public static File obtenerArchivo(String arc) {
+        File archivo = null;
+        try {
+            CodeSource codeSource = Interfaz.class.getProtectionDomain().getCodeSource();
+            File jarFile = new File(codeSource.getLocation().toURI().getPath());
+            File jarDir = jarFile.getParentFile();
+
+            System.out.println("jarFile = " + jarFile.getAbsolutePath());
+            System.out.println("jarDir = " + jarDir.getParentFile());
+
+            FileInputStream fis = null;
+
+            if (jarDir != null && jarDir.isDirectory()) {
+                archivo = new File(jarDir, arc);
+                archivo.mkdirs();
+            }
+        } catch (Exception ex) {
+            //System.err.println("No se encuentra el archivo: " + ex.getMessage());
+            Logger.getLogger(Interfaz.class.getName()).log(Level.SEVERE, String.format("No se encontró el archivo de propiedades (%s)", arc), ex);
+        }
+        return archivo;
     }
 }

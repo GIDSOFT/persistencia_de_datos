@@ -1,0 +1,6 @@
+Tarjeta Identidad;29803742;asasd;adsa;08/03/2013;0;Femenino;Alcala;Quiron;
+
+Cedula;121;asd;asda;04/08/1987;26;Masculino;Alcala;Quiron;
+
+Cedula;12213;asdasd;asdad;04/08/1987;26;Masculino;Bolivar;Quiron;
+
