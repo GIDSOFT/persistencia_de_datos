@@ -4,11 +4,9 @@
  */
 package proyecto;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,13 +17,10 @@ import java.security.CodeSource;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
-import java.util.Properties;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Scanner;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -92,8 +87,6 @@ public final class Interfaz extends javax.swing.JFrame {
      * Creates new form Interfaz
      */
     public Interfaz() {
-
-
         initComponents();
         llenarCbIdentificacion();
         llenarCbCiudadResidencia();
@@ -306,39 +299,35 @@ public final class Interfaz extends javax.swing.JFrame {
             /*esta variable nos muestra la edad*/
             edad = (anno - annoNaci);
             System.out.println("edad " + edad);
-            if ((18 < edad) && (cbIdentificacion.getSelectedItem().equals("Cedula")) || (18 > edad)
-                    && (cbIdentificacion.getSelectedItem().equals("Tarjeta Identidad"))) {
-                /*Aqui obtenemos la fecha del JDateChooser*/
-                Date date = jDateFecha.getDate();
 
-                /*este es una condicion con operadores ternarios para ver el sexo */
-                sexo = (rbMasculino.isSelected()) ? "Masculino" : "Femenino";
+            /*Aqui obtenemos la fecha del JDateChooser*/
+            Date date = jDateFecha.getDate();
 
-                /*con esto le damos el modelo a la tabla */
-                modeloTabla = (DefaultTableModel) jTRegistro.getModel();
+            /*este es una condicion con operadores ternarios para ver el sexo */
+            sexo = (rbMasculino.isSelected()) ? "Masculino" : "Femenino";
 
-                /*Nombre de las filas que va a tener la tabla*/
-                Object nuevo[] = {
-                    contador++, cbIdentificacion.getSelectedItem(), txtIdentificacion.getText(), txtNombre.getText(),
-                    txtApellidos.getText(), sdf.format(date), edad, sexo,
-                    cbCiudadR.getSelectedItem(), cbEPS.getSelectedItem()
-                };
-                /*añadimos las filas a la tabla */
-                modeloTabla.addRow(nuevo);
+            /*con esto le damos el modelo a la tabla */
+            modeloTabla = (DefaultTableModel) jTRegistro.getModel();
 
-                /*metodo para guardar el archivo */
-                guardarArchivo2();
+            /*Nombre de las filas que va a tener la tabla*/
+            Object nuevo[] = {
+                contador++, cbIdentificacion.getSelectedItem(), txtIdentificacion.getText(), txtNombre.getText(),
+                txtApellidos.getText(), sdf.format(date), edad, sexo,
+                cbCiudadR.getSelectedItem(), cbEPS.getSelectedItem()
+            };
+            /*añadimos las filas a la tabla */
+            modeloTabla.addRow(nuevo);
 
-                cbIdentificacion.setSelectedItem("-- SELECCIONE --");
-                cbCiudadR.setSelectedItem("-- SELECCIONE --");
-                cbEPS.setSelectedItem("-- SELECCIONE --");
-                txtIdentificacion.setText("");
-                txtNombre.setText("");
-                txtApellidos.setText("");
-            } else {
-                JOptionPane.showMessageDialog(this, "Señor Usuario su Tipo de Documento no Esta Correcto",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            /*metodo para guardar el archivo */
+            guardarArchivo2();
+
+            cbIdentificacion.setSelectedItem("-- SELECCIONE --");
+            cbCiudadR.setSelectedItem("-- SELECCIONE --");
+            cbEPS.setSelectedItem("-- SELECCIONE --");
+            txtIdentificacion.setText("");
+            txtNombre.setText("");
+            txtApellidos.setText("");
+
 
         } else {
             JOptionPane.showMessageDialog(this, "Señor Usuario Todos Los Campos Deben de Estar Llenos",
@@ -537,54 +526,6 @@ public final class Interfaz extends javax.swing.JFrame {
         cbEPS.addItem("Cosmited");
     }
 
-    private void guardarArchivo() {
-        /*esta es la fecha del jDateChooser*/
-        Date date = jDateFecha.getDate();
-        /*token: subString*/
-        /*divide una cadena en tokens. atendiendo a un delimitador en concreto*/
-        StringTokenizer st = new StringTokenizer("/n", ";");
-        /*hasMoreTokens: Mira si hay mas tokens en el array de token que tiene 
-         StringTokenizer*/
-        /*nextToken: devuelve el siguiente token*/
-        try {
-            fichero = new FileWriter(file, true);
-            pw = new PrintWriter(fichero);
-            //se guarda linea por linea en el archivo
-            while (st.hasMoreTokens()) {
-                line = st.nextToken();
-                pw.print(cbIdentificacion.getSelectedItem());
-                pw.print(";");
-                pw.print(txtIdentificacion.getText());
-                pw.print(";");
-                pw.print(txtNombre.getText());
-                pw.print(";");
-                pw.print(txtApellidos.getText());
-                pw.print(";");
-                pw.print(sdf.format(date));
-                pw.print(";");
-                pw.print(edad);
-                pw.print(";");
-                pw.print(sexo);
-                pw.print(";");
-                pw.print(cbCiudadR.getSelectedItem());
-                pw.print(";");
-                pw.print(cbEPS.getSelectedItem());
-                pw.print(";");
-                pw.println();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (null != fichero) {
-                    fichero.close();
-                }
-            } catch (Exception e2) {
-                e2.printStackTrace();
-            }
-        }
-    }
-    
     private void guardarArchivo2() {
         /*esta es la fecha del jDateChooser*/
         Date date = jDateFecha.getDate();
@@ -597,27 +538,27 @@ public final class Interfaz extends javax.swing.JFrame {
             fichero = new FileWriter(file, true);
             pw = new PrintWriter(fichero);
             //se guarda linea por linea en el archivo
-           // while (st.hasMoreTokens()) {
-                
-                pw.print(cbIdentificacion.getSelectedItem());
-                pw.print(";");
-                pw.print(txtIdentificacion.getText());
-                pw.print(";");
-                pw.print(txtNombre.getText());
-                pw.print(";");
-                pw.print(txtApellidos.getText());
-                pw.print(";");
-                pw.print(sdf.format(date));
-                pw.print(";");
-                pw.print(edad);
-                pw.print(";");
-                pw.print(sexo);
-                pw.print(";");
-                pw.print(cbCiudadR.getSelectedItem());
-                pw.print(";");
-                pw.print(cbEPS.getSelectedItem());
-                pw.print(";");
-                pw.println("\n");
+            // while (st.hasMoreTokens()) {
+
+            pw.print(cbIdentificacion.getSelectedItem());
+            pw.print(";");
+            pw.print(txtIdentificacion.getText());
+            pw.print(";");
+            pw.print(txtNombre.getText());
+            pw.print(";");
+            pw.print(txtApellidos.getText());
+            pw.print(";");
+            pw.print(sdf.format(date));
+            pw.print(";");
+            pw.print(edad);
+            pw.print(";");
+            pw.print(sexo);
+            pw.print(";");
+            pw.print(cbCiudadR.getSelectedItem());
+            pw.print(";");
+            pw.print(cbEPS.getSelectedItem());
+            pw.print(";");
+            pw.println("\n");
             //}
         } catch (Exception e) {
             e.printStackTrace();
@@ -755,7 +696,7 @@ public final class Interfaz extends javax.swing.JFrame {
             sdf = new SimpleDateFormat(config.getString("formatoFechaI"));
         }
         return propiedades.concat(".properties");
-        
+
         //Ingles_en_US.properties
         //Espannol_es_CO.properties
     }
@@ -788,25 +729,11 @@ public final class Interfaz extends javax.swing.JFrame {
         }
     }
 
-    public void leer() {
-        File f = new File(System.getProperty("user.dir").concat(separador).concat("registro.txt"));
-        BufferedReader entrada;
-        try {
-            entrada = new BufferedReader(new FileReader(f));
-            String linea;
-            while (entrada.ready()) {
-                linea = entrada.readLine();
-                System.out.println(linea);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
-     * @see http://christmo99.wordpress.com/2011/04/29/leer-archivo-properties-desde-el-path-donde-se-ejecuta-el-jar/
+     * @see
+     * http://christmo99.wordpress.com/2011/04/29/leer-archivo-properties-desde-el-path-donde-se-ejecuta-el-jar/
      * @param arc
-     * @return 
+     * @return
      */
     public static ResourceBundle obtenerArchivoPropiedades(String arc) {
         ResourceBundle prope = null;
